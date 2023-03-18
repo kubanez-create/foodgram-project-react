@@ -26,13 +26,13 @@ class Recipes(models.Model):
     pub_date = models.DateTimeField('Publication date', auto_now_add=True)
     author = models.ForeignKey(
         User,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name='Author',
         related_name='recipes')
     image = models.ImageField(upload_to='recipes/')
     ingredients = models.ForeignKey(
         Ingredients,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name='Ingredients',
         related_name='recipes')
     is_favored = models.BooleanField()
@@ -42,8 +42,8 @@ class Recipes(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["author", "title_id"],
-                                    name="unique review")
+            models.UniqueConstraint(fields=['author', 'name'],
+                                    name='unique recipe')
         ]
         verbose_name = 'Recipe'
         verbose_name_plural = 'Recipes'

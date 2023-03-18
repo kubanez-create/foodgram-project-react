@@ -21,11 +21,11 @@ class User(AbstractUser):
     first_name = models.CharField(
         verbose_name="Name",
         max_length=150,
-        blank=True)
+        blank=False)
 
     last_name = models.CharField(
         verbose_name="Surname",
         max_length=150,
-        blank=True)
+        blank=False)
 
-    is_subscribed = models.BooleanField()
+    is_subscribed = models.BooleanField(null=True)
