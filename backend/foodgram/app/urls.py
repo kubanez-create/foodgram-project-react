@@ -1,20 +1,18 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import CommentViewSet, GroupViewSet, PostViewSet, FollowViewSet
+from .views import TagView, RecipeViewSet, IngredientView
 
 router = DefaultRouter()
 
-app_name = 'api'
+app_name = 'app'
 
-router.register(r'posts', PostViewSet)
-router.register(r'group', GroupViewSet)
-router.register(r'posts/(?P<post_id>\d+)/comments',
-                CommentViewSet, basename='comments')
-router.register(r'follow', FollowViewSet, basename='follow')
+router.register(r'recipes', RecipeViewSet)
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
+    path('', include(router.urls)),
+    path('tags/', TagView.as_view()),
+    path('ingredients/', IngredientView.as_view()),
     # path('v1/', include('djoser.urls')),
     # path('v1/', include('djoser.urls.jwt')),
 ]

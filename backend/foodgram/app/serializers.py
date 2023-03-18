@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
+# from rest_framework.relations import SlugRelatedField
 
 from .models import Ingredients, Tags, Recipes
 from users.models import User
@@ -18,14 +18,19 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username"
-    )
+    # author = serializers.SlugRelatedField(
+    #     read_only=True, slug_field="username"
+    # )
 
     class Meta:
         model = Recipes
         fields = "__all__"
         # read_only_fields = ("author", "post")
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
 
 
 # class FollowSerializer(serializers.ModelSerializer):
