@@ -23,9 +23,9 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'djoser',
-    'CoreConfig',
-    'AppConfig',
-    'UsersConfig'
+    'core.apps.CoreConfig',
+    'app.apps.AppConfig',
+    'users.apps.UsersConfig'
 ]
 
 MIDDLEWARE = [
@@ -108,18 +108,18 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    # "DEFAULT_AUTHENTICATION_CLASSES": [
+    #     "rest_framework_simplejwt.authentication.JWTAuthentication",
+    # ],
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.'
                                 'PageNumberPagination',
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 6,
 }
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-SENDER = 'from@example.com'
+# SENDER = 'from@example.com'

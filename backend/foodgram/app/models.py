@@ -21,23 +21,23 @@ class Tags(models.Model):
         return self.name
 
 class Recipes(models.Model):
-    tags = models.ManyToManyField('Тэги', Tags, related_name='recipes')
-    text = models.TextField('Текст')
-    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    tags = models.ManyToManyField(Tags, related_name='recipes')
+    text = models.TextField('Text')
+    pub_date = models.DateTimeField('Publication date', auto_now_add=True)
     author = models.ForeignKey(
-        'Автор',
         User,
         on_delete=models.SET_NULL,
+        verbose_name='Author',
         related_name='recipes')
     image = models.ImageField(upload_to='recipes/')
     ingredients = models.ForeignKey(
-        'Ингредиенты',
         Ingredients,
         on_delete=models.SET_NULL,
+        verbose_name='Ingredients',
         related_name='recipes')
     is_favored = models.BooleanField()
     is_in_shopping_cart = models.BooleanField()
-    name = models.CharField('Название', max_length=200)
+    name = models.CharField('Name', max_length=200)
     cooking_time = models.IntegerField()
 
     class Meta:
@@ -45,8 +45,8 @@ class Recipes(models.Model):
             models.UniqueConstraint(fields=["author", "title_id"],
                                     name="unique review")
         ]
-        verbose_name = 'Рецепт'
-        verbose_name_plural = 'Рецепты'
+        verbose_name = 'Recipe'
+        verbose_name_plural = 'Recipes'
         ordering = ['pub_date']
 
     def __str__(self):
