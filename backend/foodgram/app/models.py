@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
+
 
 User = get_user_model()
 
@@ -38,7 +40,18 @@ class Recipes(models.Model):
     is_favored = models.BooleanField()
     is_in_shopping_cart = models.BooleanField()
     name = models.CharField('Name', max_length=200)
-    cooking_time = models.IntegerField()
+    cooking_time = models.IntegerField(
+        verbose_name='Время приготовления',
+        validators=[
+            MinValueValidator(
+                1,
+                message=(
+                    'Sorry, but you cannot cook'
+                    ' anything in less then a minute!'
+                )
+            )
+        ]
+    )
 
     class Meta:
         constraints = [
