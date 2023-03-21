@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, permissions, viewsets, 
+from rest_framework import filters, permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
 from .mixins import ReadOrListOnlyViewSet
@@ -13,12 +13,12 @@ from .serializers import (
 from .models import Recipes, Ingredients, Tags, User
 
 
-class TagView(ReadOrListOnlyViewSet):
+class TagViewSet(ReadOrListOnlyViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagSerializer
 
 
-class IngredientView(ReadOrListOnlyViewSet):
+class IngredientViewSet(ReadOrListOnlyViewSet):
     queryset = Ingredients.objects.all()
     serializer_class = IngredientSerializer
 
