@@ -1,5 +1,7 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import filters, permissions, viewsets
+# from django.shortcuts import get_object_or_404
+from rest_framework import filters, status, viewsets  # permissions,
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 
 from .mixins import ReadOrListOnlyViewSet
@@ -9,6 +11,7 @@ from .serializers import (
     UserSerializer,
     RecipeSerializer,
     IngredientSerializer,
+    PasswordSerializer
 )
 from .models import Recipes, Ingredients, Tags, User
 
@@ -47,8 +50,23 @@ class UserViewSet(viewsets.ModelViewSet):
     # ]
     pagination_class = LimitOffsetPagination
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return PasswordSerializer
+        return UserSerializer
+
+    @action(detail=True, methods=['post'])
+    def set_password(self, request, pk=None):
+        user = self.get_object()
+        serializer = PasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user.set_password(serializer.validated_data['password'])
+            user.save()
+            return Response({'status': 'password set'})
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # class CommentViewSet(viewsets.ModelViewSet):

@@ -39,27 +39,22 @@ class UserSerializer(serializers.ModelSerializer):
             'is_subscribed'
         )
 
+    def validate(self, data):
+        request_author = self.context.get("request").user
+        if not (request_author.username != data["following"].username):
+            raise serializers.ValidationError(
+                "Подписаться на самого себя не возможно")
 
-# class FollowSerializer(serializers.ModelSerializer):
-#     user = serializers.SlugRelatedField(slug_field="username", read_only=True)
-#     following = serializers.SlugRelatedField(
-#         slug_field="username", queryset=User.objects.all(), required=True
-#     )
 
-#     class Meta:
-#         fields = ("user", "following")
-#         model = Follow
+class PasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(required=True)
 
-#     def validate(self, data):
-#         request_author = self.context.get("request").user
-#         if not (request_author.username != data["following"].username):
-#             raise serializers.ValidationError(
-#                 "Подписаться на самого себя не возможно")
-
-#         user_following = request_author.follower.select_related("following")
-#         if user_following.filter(
-#             following__username=data["following"].username
-#         ).exists():
-#             raise serializers.ValidationError(
-#                 "Вы уже подписаны на данного автора")
-#         return data
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )

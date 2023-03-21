@@ -11,7 +11,6 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         blank=False,
-        help_text="Required. 150 characters or fewer.",
     )
 
     email = models.EmailField(
@@ -24,4 +23,4 @@ class User(AbstractUser):
     last_name = models.CharField(
         verbose_name="Surname", max_length=150, blank=False)
 
-    is_subscribed = models.BooleanField(null=True)
+    is_subscribed = models.BooleanField(default=False)
