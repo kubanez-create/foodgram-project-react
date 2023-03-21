@@ -8,7 +8,6 @@ User = get_user_model()
 class Ingredients(models.Model):
     name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=50)
-    amount = models.IntegerField()
 
     def __str__(self):
         return self.name

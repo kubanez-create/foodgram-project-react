@@ -16,7 +16,13 @@ class UserAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'measurement_unit')
+    list_filter = ('name',)
+    empty_value_display = '-пусто-'
+
+
 admin.site.register(Recipes, RecipeAdmin)
 admin.site.register(Tags)
-admin.site.register(Ingredients)
+admin.site.register(Ingredients, IngredientAdmin)
 admin.site.register(User, UserAdmin)
