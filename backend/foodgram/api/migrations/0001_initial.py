@@ -44,8 +44,8 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=200, verbose_name='Name')),
                 ('cooking_time', models.IntegerField()),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipes', to=settings.AUTH_USER_MODEL, verbose_name='Author')),
-                ('ingredients', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipes', to='app.ingredients', verbose_name='Ingredients')),
-                ('tags', models.ManyToManyField(related_name='recipes', to='app.Tags')),
+                ('ingredients', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipes', to='api.ingredients', verbose_name='Ingredients')),
+                ('tags', models.ManyToManyField(related_name='recipes', to='api.Tags')),
             ],
             options={
                 'verbose_name': 'Recipe',
