@@ -1,18 +1,22 @@
 from django.contrib import admin
 
-# from .models import Category, Comment, Genre, Review, Title, User
+from .models import Ingredients, Tags, Recipes
+from users.models import User
 
 
-# class TitleAdmin(admin.ModelAdmin):
-#     list_display = ('pk', 'name', 'category', 'year')
-#     search_fields = ('name',)
-#     list_filter = ('category',)
-#     empty_value_display = '-пусто-'
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'author')
+    list_filter = ('author', 'name')
+    empty_value_display = '-пусто-'
 
 
-# admin.site.register(Title, TitleAdmin)
-# admin.site.register(Genre)
-# admin.site.register(Category)
-# admin.site.register(User)
-# admin.site.register(Review)
-# admin.site.register(Comment)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'username', 'first_name', 'last_name', 'email')
+    list_filter = ('first_name', 'email')
+    empty_value_display = '-пусто-'
+
+
+admin.site.register(Recipes, RecipeAdmin)
+admin.site.register(Tags)
+admin.site.register(Ingredients)
+admin.site.register(User, UserAdmin)
