@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from djoser.serializers import UserSerializer as US
 # from rest_framework.relations import SlugRelatedField
 
 from .models import Ingredients, Tags, Recipes
@@ -27,7 +28,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = "__all__"
         # read_only_fields = ("author", "post")
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(US):
     class Meta:
         model = User
         fields = (
@@ -39,14 +40,14 @@ class UserSerializer(serializers.ModelSerializer):
             'is_subscribed'
         )
 
-    def validate(self, data):
-        request_author = self.context.get("request").user
-        if not (request_author.username != data["following"].username):
-            raise serializers.ValidationError(
-                "Подписаться на самого себя не возможно")
+    # def validate(self, data):
+    #     request_author = self.context.get("request").user
+    #     if not (request_author.username != data["following"].username):
+    #         raise serializers.ValidationError(
+    #             "Подписаться на самого себя не возможно")
 
 
-class PasswordSerializer(serializers.ModelSerializer):
+class PasswordSerializer(US):
     password = serializers.CharField(required=True)
 
     class Meta:

@@ -1,8 +1,9 @@
 # from django.shortcuts import get_object_or_404
-from rest_framework import filters, status, viewsets  # permissions,
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import filters, viewsets, permissions
+# from rest_framework.decorators import action
+# from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
+from djoser.views import UserViewSet as UV
 
 from .mixins import ReadOrListOnlyViewSet
 # from .permissions import IsAuthorOrReadOnlyPermission
@@ -41,13 +42,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(UV):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = [
-    #     IsAuthorOrReadOnlyPermission,
-    #     permissions.IsAuthenticatedOrReadOnly,
-    # ]
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
@@ -55,17 +52,16 @@ class UserViewSet(viewsets.ModelViewSet):
             return PasswordSerializer
         return UserSerializer
 
-    @action(detail=True, methods=['post'])
-    def set_password(self, request, pk=None):
-        user = self.get_object()
-        serializer = PasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            user.set_password(serializer.validated_data['password'])
-            user.save()
-            return Response({'status': 'password set'})
+    def get_permissions(self):
+        """
+        Instantiate and return the list of permissions given a current action.
+        """
+        if self.action == 'retrieve':
+            permission_classes = [permissions.IsAuthenticated]
         else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
+
 
 
 
