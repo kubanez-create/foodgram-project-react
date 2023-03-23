@@ -1,9 +1,11 @@
-from rest_framework import serializers
 from djoser.serializers import UserSerializer as US
+from rest_framework import serializers
+
+from users.models import User
+from .models import Ingredients, Recipes, Tags
+
 # from rest_framework.relations import SlugRelatedField
 
-from .models import Ingredients, Tags, Recipes
-from users.models import User
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -28,17 +30,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = "__all__"
         # read_only_fields = ("author", "post")
 
+
 class UserSerializer(US):
     class Meta:
         model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed'
-        )
+        fields = ("email", "id", "username", "first_name",
+                  "last_name", "is_subscribed")
 
     # def validate(self, data):
     #     request_author = self.context.get("request").user
@@ -52,10 +49,4 @@ class PasswordSerializer(US):
 
     class Meta:
         model = User
-        fields = (
-            'email',
-            'username',
-            'first_name',
-            'last_name',
-            'password'
-        )
+        fields = ("email", "username", "first_name", "last_name", "password")

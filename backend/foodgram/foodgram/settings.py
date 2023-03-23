@@ -100,12 +100,17 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-#     'AUTH_HEADER_TYPES': ('Token',),
-# }
-
 AUTH_USER_MODEL = 'users.User'
+
+DJOSER = {
+    "PERMISSIONS": {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    },
+    "SERIALIZERS": {
+        'user_list': 'api.serializers.UserSerializer',
+    },
+    "HIDE_USERS": False
+}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
