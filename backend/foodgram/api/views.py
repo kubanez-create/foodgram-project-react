@@ -10,10 +10,10 @@ from .mixins import ReadOrListOnlyViewSet
 # from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     TagSerializer,
-    UserSerializer,
+    CustomUserSerializer,
     RecipeSerializer,
     IngredientSerializer,
-    PasswordSerializer
+    CustomUserCreateSerializer
 )
 from .models import Recipes, Ingredients, Tags, User
 
@@ -21,6 +21,7 @@ from .models import Recipes, Ingredients, Tags, User
 class TagViewSet(ReadOrListOnlyViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
 
 
 class IngredientViewSet(ReadOrListOnlyViewSet):
@@ -28,6 +29,7 @@ class IngredientViewSet(ReadOrListOnlyViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -45,26 +47,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(UV):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = CustomUserSerializer
     pagination_class = LimitOffsetPagination
-    permission_class = [permissions.AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return PasswordSerializer
-        return UserSerializer
+            return CustomUserCreateSerializer
+        return CustomUserSerializer
 
-    # def get_permissions(self):
-    #     """
-    #     Instantiate and return the list of permissions given a current action.
-    #     """
-    #     if self.action == 'retrieve':
-    #         permission_classes = [permissions.IsAuthenticated]
-    #     else:
-    #         permission_classes = [permissions.AllowAny]
-    #     perm = [permission() for permission in permission_classes]
-    #     return super().get_permissions()
-
+    def get_permissions(self):
+        """
+        Instantiate and return the list of permissions given a current action.
+        """
+        if self.action == 'retrieve':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
 
 
 # class CommentViewSet(viewsets.ModelViewSet):

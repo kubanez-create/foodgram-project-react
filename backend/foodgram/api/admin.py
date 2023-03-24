@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Ingredients, Tags, Recipes
-from users.models import User
+from users.models import CustomUser
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -25,4 +25,4 @@ class IngredientAdmin(admin.ModelAdmin):
 admin.site.register(Recipes, RecipeAdmin)
 admin.site.register(Tags)
 admin.site.register(Ingredients, IngredientAdmin)
-admin.site.register(User, UserAdmin)
+admin.site.register(CustomUser, UserAdmin)

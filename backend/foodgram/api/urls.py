@@ -1,5 +1,6 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
+from djoser.views import TokenCreateView, TokenDestroyView
 
 from .views import TagViewSet, RecipeViewSet, IngredientViewSet, UserViewSet
 
@@ -14,6 +15,6 @@ router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
+    re_path(r"^auth/token/login/?$", TokenCreateView.as_view(), name="login"),
+    re_path(r"^auth/token/logout/?$", TokenDestroyView.as_view(), name="logout"),
 ]

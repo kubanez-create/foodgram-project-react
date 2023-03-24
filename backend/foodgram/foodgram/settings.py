@@ -20,8 +20,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework',
     'djoser',
     'core.apps.CoreConfig',
     'api.apps.ApiConfig',
@@ -60,12 +60,8 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'),
-        'PORT': os.getenv('PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -100,16 +96,15 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 DJOSER = {
-    "PERMISSIONS": {
-        'user_list': ['rest_framework.permissions.AllowAny'],
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
     },
-    "SERIALIZERS": {
-        'user_list': 'api.serializers.UserSerializer',
-    },
-    "HIDE_USERS": False
+    "HIDE_USERS": False,
 }
 
 REST_FRAMEWORK = {
@@ -117,10 +112,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.'
-    #                             'PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.'
+                                'LimitOffsetPagination',
     "PAGE_SIZE": 6,
 }
 

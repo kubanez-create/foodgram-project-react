@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class User(AbstractUser):
+class CustomUser(AbstractUser):
     """User's custom model."""
 
     username = models.CharField(
@@ -24,3 +24,6 @@ class User(AbstractUser):
         verbose_name="Surname", max_length=150, blank=False)
 
     is_subscribed = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']

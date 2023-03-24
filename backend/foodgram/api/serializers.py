@@ -1,7 +1,7 @@
-from djoser.serializers import UserSerializer as US
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
-from users.models import User
+from users.models import CustomUser
 from .models import Ingredients, Recipes, Tags
 
 # from rest_framework.relations import SlugRelatedField
@@ -31,22 +31,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         # read_only_fields = ("author", "post")
 
 
-class UserSerializer(US):
-    class Meta:
-        model = User
-        fields = ("email", "id", "username", "first_name",
-                  "last_name", "is_subscribed")
-
-    # def validate(self, data):
-    #     request_author = self.context.get("request").user
-    #     if not (request_author.username != data["following"].username):
-    #         raise serializers.ValidationError(
-    #             "Подписаться на самого себя не возможно")
+class CustomUserSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name','last_name',
+                  'is_subscribed')
 
 
-class PasswordSerializer(US):
-    password = serializers.CharField(required=True)
-
-    class Meta:
-        model = User
-        fields = ("email", "username", "first_name", "last_name", "password")
+class CustomUserCreateSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name', 'last_name',
+                  'password')
