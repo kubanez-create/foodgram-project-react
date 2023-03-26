@@ -1,8 +1,4 @@
-# from django.shortcuts import get_object_or_404
-from rest_framework import filters, viewsets, permissions, authentication
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-# from rest_framework.decorators import action
-# from rest_framework.response import Response
+from rest_framework import filters, viewsets, permissions
 from rest_framework.pagination import LimitOffsetPagination
 from djoser.views import UserViewSet as UV
 
@@ -40,6 +36,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_permissions(self):
+        if self.action == 'create' or self.action == 'patch':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
+
 
 class UserViewSet(UV):
     queryset = User.objects.all()
@@ -52,17 +55,8 @@ class UserViewSet(UV):
         return CustomUserSerializer
 
     def get_permissions(self):
-        """
-        Instantiate and return the list of permissions given a current action.
-        """
         if self.action == 'retrieve' or self.action == 'me':
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
-
-
-# class CustomMe(UV):
-#     queryset = User.objects.all()
-#     serializer_class = CustomUserSerializer
-#     permission_classes = [permissions.IsAuthenticated]

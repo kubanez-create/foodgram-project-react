@@ -6,8 +6,9 @@ User = get_user_model()
 
 
 class Ingredients(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     measurement_unit = models.CharField(max_length=50)
+    amount = models.IntegerField(blank=True)
 
     def __str__(self):
         return self.name
@@ -31,14 +32,13 @@ class Recipes(models.Model):
         on_delete=models.CASCADE, verbose_name="Author", related_name="recipes"
     )
     image = models.ImageField(upload_to="recipes/")
-    ingredients = models.ForeignKey(
+    ingredients = models.ManyToManyField(
         Ingredients,
-        on_delete=models.CASCADE,
         verbose_name="Ingredients",
         related_name="recipes",
     )
-    is_favored = models.BooleanField()
-    is_in_shopping_cart = models.BooleanField()
+    is_favored = models.BooleanField(default=False)
+    is_in_shopping_cart = models.BooleanField(default=False)
     name = models.CharField("Name", max_length=200)
     cooking_time = models.IntegerField(
         verbose_name="Время приготовления",
