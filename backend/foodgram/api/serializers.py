@@ -27,7 +27,8 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        return instance
+        return {"id": instance.id, "name": instance.name,
+                "color": instance.color, "slug": instance.slug}
     def to_internal_value(self, data):
         inst = get_object_or_404(Tags, pk=data)
         return {'name': inst.name, 'slug': inst.slug, 'color': inst.color}
@@ -40,7 +41,9 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
     def to_representation(self, instance):
-        return instance
+        return {"id": instance.id, "name": instance.name,
+                "measurement_unit": instance.measurement_unit,
+                "amount": instance.amount}
     def to_internal_value(self, data):
         inst = get_object_or_404(Ingredients, pk=data.get('id'))
         return {'name': inst.name, 'measurement_unit': inst.measurement_unit,
@@ -64,11 +67,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipes.objects.create(**validated_data)
         ing_list, tags_list = [], []
         for i in ingredients:
-            current_ingredient, _ = Ingredients.objects.get(name=i.get('name'))
+            current_ingredient = Ingredients.objects.get(name=i.get('name'))
             ing_list.append(current_ingredient)
         recipe.ingredients.add(*ing_list)
         for t in tags:
-            current_tag, _ = Tags.objects.get(slug=t.get('slug'))
+            current_tag = Tags.objects.get(slug=t.get('slug'))
             tags_list.append(current_tag)
         recipe.tags.add(*tags_list)
         return recipe
