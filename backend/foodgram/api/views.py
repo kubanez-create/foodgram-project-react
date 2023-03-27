@@ -36,8 +36,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
+
     def get_permissions(self):
-        if self.action == 'create' or self.action == 'patch':
+        if self.action == 'create' or self.action == 'partial_update':
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.AllowAny]

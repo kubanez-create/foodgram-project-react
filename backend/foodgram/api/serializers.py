@@ -77,7 +77,30 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        pass
+        instance.text = validated_data.get('text', instance.text)
+        instance.name = validated_data.get('name', instance.name)
+        instance.cooking_time = validated_data.get('cooking_time',
+                                                   instance.cooking_time)
+        instance.image = validated_data.get('image', instance.image)
+        if 'tags' in validated_data:
+            tags_data = validated_data.pop('tags')
+            lst = []
+            for tag in tags_data:
+                current_tag = Tags.objects.get(slug=tag.get('slug'))
+                lst.append(current_tag)
+            instance.tags.set(lst)
+        if 'ingredients' in validated_data:
+            ingredients_data = validated_data.pop('ingredients')
+            lst = []
+            for ingredient in ingredients_data:
+                current_ingredient = Ingredients.objects.get(
+                    name=ingredient.get('name')
+                )
+                lst.append(current_ingredient)
+            instance.ingredients.set(lst)
+
+        instance.save()
+        return instance
 
 class CustomUserSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
