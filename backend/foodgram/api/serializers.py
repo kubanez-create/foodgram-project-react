@@ -114,3 +114,23 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         model = CustomUser
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'password')
+
+
+class FavoritesSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('id',)
+        model = Recipes
+
+    def to_representation(self, instance):
+        return {"id": instance.id, "name": instance.name,
+                "image": instance.image, "cooking_time": instance.cooking_time}
+
+    def validate(self, data):
+        request_author = self.context.get("request").user
+        recipe_id = self.context.get('request').parser_context.get('kwargs')
+        recipe = get_object_or_404(Recipes, id=recipe_id.get('id'))
+        favorites = request_author.favorites.select_related('author')
+        if favorites.filter(author__favorites=recipe.id).exists():
+            raise serializers.ValidationError(
+                'Данный рецепт уже в избранных.')
+        return data

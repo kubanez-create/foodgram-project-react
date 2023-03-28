@@ -1,15 +1,17 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets, permissions
 from rest_framework.pagination import LimitOffsetPagination
 from djoser.views import UserViewSet as UV
 
-from .mixins import ReadOrListOnlyViewSet
-# from .permissions import IsAuthorOrReadOnlyPermission
+from .mixins import ReadOrListOnlyViewSet, CreateDeleteViewSet
+from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     TagSerializer,
     CustomUserSerializer,
     RecipeSerializer,
     IngredientSerializer,
-    CustomUserCreateSerializer
+    CustomUserCreateSerializer,
+    FavoritesSerializer
 )
 from .models import Recipes, Ingredients, Tags, User
 
@@ -63,3 +65,21 @@ class UserViewSet(UV):
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
+
+
+class FavoritesViewSet(CreateDeleteViewSet):
+    serializer_class = FavoritesSerializer
+    permission_classes = [IsAuthorOrReadOnlyPermission]
+
+    def perform_create(self, serializer):
+        recipe = get_object_or_404(Recipes, pk=self.kwargs.get('id'))
+        serializer.save(
+            is_favored=self.request.user,
+            author_id=recipe.author_id,
+            cooking_time=recipe.cooking_time,
+        )
+
+    def get_queryset(self):
+        _id = self.kwargs.get('id')
+        new_queryset = get_object_or_404(Recipes, id=_id).favorites.all()
+        return new_queryset

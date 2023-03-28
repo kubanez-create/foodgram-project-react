@@ -37,8 +37,10 @@ class Recipes(models.Model):
         verbose_name="Ingredients",
         related_name="recipes",
     )
-    is_favored = models.BooleanField(default=False)
-    is_in_shopping_cart = models.BooleanField(default=False)
+    favored = models.ManyToManyField(User, related_name='favorites',
+                                        blank=True)
+    in_shopping_cart = models.ManyToManyField(User, related_name='shopping',
+                                                 blank=True)
     name = models.CharField("Name", max_length=200)
     cooking_time = models.IntegerField(
         verbose_name="Время приготовления",
@@ -52,6 +54,14 @@ class Recipes(models.Model):
             )
         ],
     )
+
+    @property
+    def is_favored(self):
+        return User.objects.filter(favorites__id=self.id).exists()
+
+    @property
+    def is_in_shopping_cart(self):
+        return User.objects.filter(shopping__id=self.id).exists()
 
     class Meta:
         constraints = [
