@@ -2,16 +2,13 @@ from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 from djoser.views import TokenCreateView, TokenDestroyView
 
-from .views import (TagViewSet, RecipeViewSet, IngredientViewSet, UserViewSet,
-                    FavoritesViewSet)
+from .views import TagViewSet, RecipeViewSet, IngredientViewSet, UserViewSet
 
 router = DefaultRouter()
 
 app_name = 'api'
 
 router.register(r'recipes', RecipeViewSet)
-router.register(r'recipes/(?P<id>\d+)/favorite', FavoritesViewSet,
-                basename='favorites')
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 router.register(r'users', UserViewSet)

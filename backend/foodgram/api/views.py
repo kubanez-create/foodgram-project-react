@@ -1,9 +1,11 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import filters, viewsets, permissions, status
 from rest_framework.pagination import LimitOffsetPagination
 from djoser.views import UserViewSet as UV
 
-from .mixins import ReadOrListOnlyViewSet, CreateDeleteViewSet
+from .mixins import ReadOrListOnlyViewSet
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     TagSerializer,
@@ -48,6 +50,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
 
+    @action(
+       detail=True, methods=['POST', 'DELETE'],
+       permission_classes=[IsAuthorOrReadOnlyPermission]
+    )
+    def favorite(self, request, pk=None):
+        recipe = get_object_or_404(Recipes, pk=pk)
+        if request.method == 'POST':
+            data = {'favored': request.user}
+            serializer = FavoritesSerializer(recipe, data=data, partial=True)
+            if serializer.is_valid():
+                recipe.favored.add(request.user)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'DELETE':
+            if request.user not in recipe.favored.all():
+                return Response(
+                    {'errors': (
+                                    f'Рецепт "{recipe}" не '
+                                    'находился в Избранном'
+                                )},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                recipe.favored.remove(request.user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class UserViewSet(UV):
     queryset = User.objects.all()
@@ -67,19 +100,19 @@ class UserViewSet(UV):
         return [permission() for permission in permission_classes]
 
 
-class FavoritesViewSet(CreateDeleteViewSet):
-    serializer_class = FavoritesSerializer
-    permission_classes = [IsAuthorOrReadOnlyPermission]
+# class FavoritesViewSet(CreateDeleteViewSet):
+#     serializer_class = FavoritesSerializer
+#     permission_classes = [IsAuthorOrReadOnlyPermission]
 
-    def perform_create(self, serializer):
-        recipe = get_object_or_404(Recipes, pk=self.kwargs.get('id'))
-        serializer.save(
-            is_favored=self.request.user,
-            author_id=recipe.author_id,
-            cooking_time=recipe.cooking_time,
-        )
+#     def perform_create(self, serializer):
+#         recipe = get_object_or_404(Recipes, pk=self.kwargs.get('id'))
+#         # recipe.favored.add(self.request.user)
+#         # , favored = self.request.user
+#         serializer.save(
+#             recipe=recipe
+#         )
 
-    def get_queryset(self):
-        _id = self.kwargs.get('id')
-        new_queryset = get_object_or_404(Recipes, id=_id).favorites.all()
-        return new_queryset
+#     def get_queryset(self):
+#         _id = self.kwargs.get('id')
+#         new_queryset = get_object_or_404(Recipes, id=_id).favored.all()
+#         return new_queryset
