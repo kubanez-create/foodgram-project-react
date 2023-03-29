@@ -11,6 +11,7 @@ from .serializers import (
     TagSerializer,
     CustomUserSerializer,
     RecipeSerializer,
+    RecipeCreateSerializer,
     IngredientSerializer,
     CustomUserCreateSerializer,
     FavoritesSerializer
@@ -40,15 +41,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
-
     def get_permissions(self):
         if self.action == 'create' or self.action == 'partial_update':
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'partial_update':
+            return RecipeCreateSerializer
+        return RecipeSerializer
 
     @action(
        detail=True, methods=['POST', 'DELETE'],
@@ -98,21 +101,3 @@ class UserViewSet(UV):
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
-
-
-# class FavoritesViewSet(CreateDeleteViewSet):
-#     serializer_class = FavoritesSerializer
-#     permission_classes = [IsAuthorOrReadOnlyPermission]
-
-#     def perform_create(self, serializer):
-#         recipe = get_object_or_404(Recipes, pk=self.kwargs.get('id'))
-#         # recipe.favored.add(self.request.user)
-#         # , favored = self.request.user
-#         serializer.save(
-#             recipe=recipe
-#         )
-
-#     def get_queryset(self):
-#         _id = self.kwargs.get('id')
-#         new_queryset = get_object_or_404(Recipes, id=_id).favored.all()
-#         return new_queryset

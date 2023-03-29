@@ -8,7 +8,6 @@ User = get_user_model()
 class Ingredients(models.Model):
     name = models.CharField(max_length=200, unique=True)
     measurement_unit = models.CharField(max_length=50)
-    amount = models.IntegerField(blank=True)
 
     def __str__(self):
         return self.name
@@ -35,11 +34,11 @@ class Recipes(models.Model):
     ingredients = models.ManyToManyField(
         Ingredients,
         verbose_name="Ingredients",
-        related_name="recipes",
+        through='RecipeIngredients'
     )
-    favored = models.ManyToManyField(User, related_name='favorites',
+    favorited = models.ManyToManyField(User, related_name='favorites',
                                         blank=True)
-    in_shopping_cart = models.ManyToManyField(User, related_name='shopping',
+    shopping_cart = models.ManyToManyField(User, related_name='shopping',
                                                  blank=True)
     name = models.CharField("Name", max_length=200)
     cooking_time = models.IntegerField(
@@ -55,11 +54,9 @@ class Recipes(models.Model):
         ],
     )
 
-    @property
-    def is_favored(self):
+    def is_favorited(self):
         return User.objects.filter(favorites__id=self.id).exists()
 
-    @property
     def is_in_shopping_cart(self):
         return User.objects.filter(shopping__id=self.id).exists()
 
@@ -74,3 +71,12 @@ class Recipes(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class RecipeIngredients(models.Model):
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
+    amount = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.recipe} {self.ingredient}'

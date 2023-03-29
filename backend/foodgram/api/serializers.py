@@ -6,7 +6,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
 from users.models import CustomUser
-from .models import Ingredients, Recipes, Tags
+from .models import Ingredients, Recipes, Tags, RecipeIngredients
 
 # from rest_framework.relations import SlugRelatedField
 
@@ -59,17 +59,32 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipes
-        fields = '__all__'
+        fields = ('id', 'tags', 'ingredients', 'author', 'is_favorited',
+                  'is_in_shopping_cart', 'name', 'image', 'text',
+                  'cooking_time')
+
+
+
+class RecipeCreateSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+    tags = TagSerializer(many=True)
+    ingredients = IngredientSerializer(many=True)
+
+    class Meta:
+        model = Recipes
+        fields = ('tags', 'image', 'ingredients', 'name', 'text',
+                  'cooking_time')
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipes.objects.create(**validated_data)
-        ing_list, tags_list = [], []
+        tags_list = []
         for i in ingredients:
-            current_ingredient = Ingredients.objects.get(name=i.get('name'))
-            ing_list.append(current_ingredient)
-        recipe.ingredients.add(*ing_list)
+            current_ingredient, status = get_object_or_404(
+                Ingredients, name=i.get('name'))
+            RecipeIngredients.objects.create(recipe=recipe,
+                                             ingredient=current_ingredient)
         for t in tags:
             current_tag = Tags.objects.get(slug=t.get('slug'))
             tags_list.append(current_tag)
@@ -96,6 +111,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 current_ingredient = Ingredients.objects.get(
                     name=ingredient.get('name')
                 )
+                current_ingredient.amount = ingredient.get('amount')
                 lst.append(current_ingredient)
             instance.ingredients.set(lst)
 
