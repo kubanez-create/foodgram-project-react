@@ -8,7 +8,6 @@ from rest_framework import serializers
 from users.models import CustomUser
 from .models import Ingredients, Recipes, Tags, RecipeIngredients
 
-# from rest_framework.relations import SlugRelatedField
 
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
@@ -40,20 +39,30 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredients
         fields = ('id', 'name', 'measurement_unit')
 
+
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecipeIngredients
+        fields = ('id', 'recipe', 'ingredient', 'amount')
+
     def to_representation(self, instance):
-        return {"id": instance.id, "name": instance.name,
-                "measurement_unit": instance.measurement_unit,
-                "amount": instance.amount}
+        return {
+            "id": instance.id, "name": instance.name,
+            "measurement_unit": instance.measurement_unit,
+            "amount": instance.recipeingredients_set.all()[0].amount
+        }
+
     def to_internal_value(self, data):
         inst = get_object_or_404(Ingredients, pk=data.get('id'))
-        return {'name': inst.name, 'measurement_unit': inst.measurement_unit,
+        return {'name': inst.name,
+                'measurement_unit': inst.measurement_unit,
                 'amount': data.get('amount')}
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(many=True)
-    ingredients = IngredientSerializer(many=True)
+    ingredients = RecipeIngredientSerializer(many=True)
     author = serializers.SlugRelatedField(
         slug_field='username', read_only=True)
 
@@ -68,12 +77,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(many=True)
-    ingredients = IngredientSerializer(many=True)
+    ingredients = RecipeIngredientSerializer(many=True)
 
     class Meta:
         model = Recipes
-        fields = ('tags', 'image', 'ingredients', 'name', 'text',
-                  'cooking_time')
+        fields = ('id', 'tags', 'image', 'ingredients', 'name', 'text',
+                  'cooking_time', 'is_favorited', 'is_in_shopping_cart')
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -81,10 +90,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe = Recipes.objects.create(**validated_data)
         tags_list = []
         for i in ingredients:
-            current_ingredient, status = get_object_or_404(
+            current_ingredient = get_object_or_404(
                 Ingredients, name=i.get('name'))
             RecipeIngredients.objects.create(recipe=recipe,
-                                             ingredient=current_ingredient)
+                                             ingredient=current_ingredient,
+                                             amount=i.get('amount'))
         for t in tags:
             current_tag = Tags.objects.get(slug=t.get('slug'))
             tags_list.append(current_tag)
@@ -108,14 +118,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredients_data = validated_data.pop('ingredients')
             lst = []
             for ingredient in ingredients_data:
-                current_ingredient = Ingredients.objects.get(
-                    name=ingredient.get('name')
+                curr_ingredient, _ = RecipeIngredients.objects.get_or_create(
+                    recipe=instance,
+                    ingredient=ingredient.get('name'),
+                    amount=ingredient.get('amount')
                 )
-                current_ingredient.amount = ingredient.get('amount')
-                lst.append(current_ingredient)
-            instance.ingredients.set(lst)
-
-        instance.save()
         return instance
 
 class CustomUserSerializer(UserSerializer):
