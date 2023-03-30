@@ -122,7 +122,9 @@ class UserViewSet(UV):
                 status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
-            if request.user not in writer.subscribed.all():
+            links = writer.subscribed.through.objects.all()
+            if not links.filter(from_customuser=writer,
+                            to_customuser=request.user).exists():
                 return Response(
                     {'errors': (
                                     f'Вы не подписаны на автора "{writer}".'
