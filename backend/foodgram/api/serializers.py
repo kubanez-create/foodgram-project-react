@@ -161,14 +161,14 @@ class FavoritesSerializer(serializers.ModelSerializer):
 
 class RecipeFollowSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'image', 'cooking_time')
         model = Recipes
 
 
 class FollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    recipes = RecipeFollowSerializer()
+    recipes = RecipeFollowSerializer(many=True)
 
     class Meta:
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
