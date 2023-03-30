@@ -23,7 +23,8 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(
         verbose_name="Surname", max_length=150, blank=False)
 
-    is_subscribed = models.BooleanField(default=False)
+    subscribed = models.ManyToManyField('self', default=None,
+                                        symmetrical=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']

@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from djoser.views import TokenCreateView, TokenDestroyView
 
 from .views import TagViewSet, RecipeViewSet, IngredientViewSet, UserViewSet
+                    # FollowViewSet
 
 router = DefaultRouter()
 
@@ -12,6 +13,7 @@ router.register(r'recipes', RecipeViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 router.register(r'users', UserViewSet)
+# router.register(r'subscribe', FollowViewSet, basename="follow")
 
 
 urlpatterns = [

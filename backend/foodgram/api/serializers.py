@@ -126,10 +126,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
 class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta(UserSerializer.Meta):
         model = CustomUser
         fields = ('id', 'username', 'email', 'first_name','last_name',
                   'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        return bool(obj.subscribed_id)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -151,4 +156,44 @@ class FavoritesSerializer(serializers.ModelSerializer):
         if favorites.filter(id__in=[recipe_id]).exists():
             raise serializers.ValidationError(
                 'Данный рецепт уже в избранных.')
+        return data
+
+
+class RecipeFollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('id', 'name')
+        model = Recipes
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    recipes = RecipeFollowSerializer()
+
+    class Meta:
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count')
+        model = CustomUser
+
+    def get_is_subscribed(self, obj):
+        links = obj.subscribed.through.objects.select_related()
+        return links.filter(
+            from_customuser=obj,
+            to_customuser=self.initial_data.get('subscribed')).exists()
+
+    def get_recipes_count(self, obj):
+        records = obj.recipes.all()
+        return len(records)
+
+    def validate(self, data):
+        if not (
+            self.instance != self.initial_data.get('subscribed')
+        ):
+            raise serializers.ValidationError(
+                "Подписаться на самого себя не возможно")
+
+        user_following = self.instance.subscribed.select_related()
+        if self.initial_data.get('subscribed') in user_following:
+            raise serializers.ValidationError(
+                "Вы уже подписаны на данного автора")
         return data

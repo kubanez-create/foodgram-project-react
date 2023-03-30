@@ -14,7 +14,8 @@ from .serializers import (
     RecipeCreateSerializer,
     IngredientSerializer,
     CustomUserCreateSerializer,
-    FavoritesSerializer
+    FavoritesSerializer,
+    FollowSerializer
 )
 from .models import Recipes, Ingredients, Tags, User
 
@@ -101,3 +102,33 @@ class UserViewSet(UV):
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
+
+    @action(
+       detail=True, methods=['POST', 'DELETE'],
+       permission_classes=[IsAuthorOrReadOnlyPermission]
+    )
+    def subscribe(self, request, id=None):
+        writer = get_object_or_404(User, pk=id)
+        if request.method == 'POST':
+            data = {'subscribed': request.user}
+            serializer = FollowSerializer(writer, data=data, partial=True)
+            if serializer.is_valid():
+                writer.subscribed.add(request.user)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'DELETE':
+            if request.user not in writer.subscribed.all():
+                return Response(
+                    {'errors': (
+                                    f'Вы не подписаны на автора "{writer}".'
+                                )},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                writer.subscribed.remove(request.user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
