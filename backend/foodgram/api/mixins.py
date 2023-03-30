@@ -7,7 +7,7 @@ class ReadOrListOnlyViewSet(
     pass
 
 
-class CreateDeleteViewSet(
-    mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
+class ListViewSet(
+    mixins.ListModelMixin, viewsets.GenericViewSet
 ):
     pass

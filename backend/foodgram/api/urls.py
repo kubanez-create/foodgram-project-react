@@ -2,8 +2,8 @@ from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 from djoser.views import TokenCreateView, TokenDestroyView
 
-from .views import TagViewSet, RecipeViewSet, IngredientViewSet, UserViewSet
-                    # FollowViewSet
+from .views import (TagViewSet, RecipeViewSet, IngredientViewSet, UserViewSet,
+                    SubscriptionsViewSet)
 
 router = DefaultRouter()
 
@@ -12,8 +12,10 @@ app_name = 'api'
 router.register(r'recipes', RecipeViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
+router.register(r'users/subscriptions', SubscriptionsViewSet,
+                basename='subscriptions')
 router.register(r'users', UserViewSet)
-# router.register(r'subscribe', FollowViewSet, basename="follow")
+
 
 
 urlpatterns = [

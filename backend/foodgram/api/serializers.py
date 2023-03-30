@@ -177,9 +177,12 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         links = obj.subscribed.through.objects.select_related()
-        return links.filter(
-            from_customuser=obj,
-            to_customuser=self.initial_data.get('subscribed')).exists()
+        if hasattr(self, 'initial_data'):
+            return links.filter(
+                from_customuser=obj,
+                to_customuser=self.initial_data.get('subscribed')).exists()
+        else:
+            return True
 
     def get_recipes_count(self, obj):
         records = obj.recipes.all()

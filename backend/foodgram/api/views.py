@@ -5,7 +5,7 @@ from rest_framework import filters, viewsets, permissions, status
 from rest_framework.pagination import LimitOffsetPagination
 from djoser.views import UserViewSet as UV
 
-from .mixins import ReadOrListOnlyViewSet
+from .mixins import ReadOrListOnlyViewSet, ListViewSet
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     TagSerializer,
@@ -134,3 +134,11 @@ class UserViewSet(UV):
             else:
                 writer.subscribed.remove(request.user)
                 return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SubscriptionsViewSet(ListViewSet):
+    permission_classes=[permissions.IsAuthenticatedOrReadOnly]
+    serializer_class=FollowSerializer
+
+    def get_queryset(self):
+        return self.request.user.subscribed.all()
