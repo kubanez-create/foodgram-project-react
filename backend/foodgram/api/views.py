@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Sum, Q
 from djoser.views import UserViewSet as UV
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -6,11 +7,12 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from .mixins import ListViewSet, ReadOrListOnlyViewSet
-from .models import Ingredients, Recipes, Tags, User
+from .models import Ingredients, Recipes, Tags, User, RecipeIngredients
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     CustomUserCreateSerializer,
     CustomUserSerializer,
+    DownloadSerializer,
     FavoritesSerializer,
     FollowSerializer,
     IngredientSerializer,
@@ -155,8 +157,26 @@ class UserViewSet(UV):
 
 
 class SubscriptionsViewSet(ListViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = FollowSerializer
 
     def get_queryset(self):
         return self.request.user.subscribed.all()
+
+
+class ShoppingViewSet(ListViewSet):
+    serializer_class = DownloadSerializer
+
+    def list(self, request, *args, **kwargs):
+        user_shopping_recipes = self.request.user.shopping.select_related()
+        qs = Ingredients.objects.annotate(
+            total=Sum('recipeingredients__amount',
+                      distinct=True)).filter(
+                          recipeingredients__recipe__in=user_shopping_recipes)
+
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)

@@ -200,8 +200,8 @@ class FollowSerializer(serializers.ModelSerializer):
             return True
 
     def get_recipes_count(self, obj):
-        records = obj.recipes.all()
-        return len(records)
+        # records = obj.recipes.all()
+        return obj.recipes.count()
 
     def validate(self, data):
         if not (
@@ -215,3 +215,14 @@ class FollowSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы уже подписаны на данного автора')
         return data
+
+
+class DownloadSerializer(serializers.ModelSerializer):
+    amount = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = ('name', 'amount')
+        model = Ingredients
+
+    def get_amount(self, obj):
+        return obj.total
