@@ -221,7 +221,7 @@ class DownloadSerializer(serializers.ModelSerializer):
     amount = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('name', 'amount')
+        fields = ('name', 'amount', 'measurement_unit')
         model = Ingredients
 
     def get_amount(self, obj):

@@ -1,5 +1,8 @@
+import tempfile
+
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum, Q
+from django.db.models import Sum
 from djoser.views import UserViewSet as UV
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -7,7 +10,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from .mixins import ListViewSet, ReadOrListOnlyViewSet
-from .models import Ingredients, Recipes, Tags, User, RecipeIngredients
+from .models import Ingredients, Recipes, Tags, User
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     CustomUserCreateSerializer,
@@ -173,10 +176,17 @@ class ShoppingViewSet(ListViewSet):
                       distinct=True)).filter(
                           recipeingredients__recipe__in=user_shopping_recipes)
 
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
         serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+        result = [
+            f' - {i["name"]} ({i["measurement_unit"]}) - {i["amount"]}'
+            for i in serializer.data
+        ]
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            with open(tmpdirname+'/shopping_list.txt', 'w') as f:
+                f.write('\n'.join(result))
+            response = HttpResponse(tmpdirname+'/shopping_list.txt',
+                                    content_type='text/txt')
+            response[
+                'Content-Disposition'
+                ] = 'attachment; filename=shopping_list.txt'
+            return response
