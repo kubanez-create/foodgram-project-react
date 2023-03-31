@@ -26,8 +26,8 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        return {"id": instance.id, "name": instance.name,
-                "color": instance.color, "slug": instance.slug}
+        return {'id': instance.id, 'name': instance.name,
+                'color': instance.color, 'slug': instance.slug}
     def to_internal_value(self, data):
         inst = get_object_or_404(Tags, pk=data)
         return {'name': inst.name, 'slug': inst.slug, 'color': inst.color}
@@ -150,12 +150,27 @@ class FavoritesSerializer(serializers.ModelSerializer):
         model = Recipes
 
     def validate(self, data):
-        request_author = self.initial_data.get('favored')
+        request_author = self.initial_data.get('favorited')
         recipe_id = self.instance.id
         favorites = request_author.favorites.select_related('author')
         if favorites.filter(id__in=[recipe_id]).exists():
             raise serializers.ValidationError(
                 'Данный рецепт уже в избранных.')
+        return data
+
+
+class ShoppingSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('id', 'name', 'image', 'cooking_time')
+        model = Recipes
+
+    def validate(self, data):
+        request_author = self.initial_data.get('shopping_cart')
+        recipe_id = self.instance.id
+        shopping = request_author.shopping.select_related('author')
+        if shopping.filter(id__in=[recipe_id]).exists():
+            raise serializers.ValidationError(
+                'Данный рецепт уже в корзине.')
         return data
 
 
@@ -193,10 +208,10 @@ class FollowSerializer(serializers.ModelSerializer):
             self.instance != self.initial_data.get('subscribed')
         ):
             raise serializers.ValidationError(
-                "Подписаться на самого себя не возможно")
+                'Подписаться на самого себя не возможно')
 
         user_following = self.instance.subscribed.select_related()
         if self.initial_data.get('subscribed') in user_following:
             raise serializers.ValidationError(
-                "Вы уже подписаны на данного автора")
+                'Вы уже подписаны на данного автора')
         return data

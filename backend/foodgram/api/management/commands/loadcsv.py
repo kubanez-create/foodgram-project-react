@@ -1,9 +1,8 @@
 """Custom manage.py command for loading csv files into project database."""
 import csv
 
+from api.models import Ingredients, Recipes, Tags
 from django.core.management.base import BaseCommand, CommandError
-
-from api.models import Tags, Ingredients, Recipes
 from users.models import CustomUser
 
 COMMANDS = {
@@ -43,8 +42,8 @@ class Command(BaseCommand):
                 field_names = next(reader)
 
                 for row in reader:
-                    data_to_insert = dict(zip(field_names, row))
-                    special_models = ['recipes']
+                    data_to_insert = dict(zip(field_names, row, strict=True))
+                    special_models = ["recipes"]
                     if command not in special_models:
                         model.objects.create(**data_to_insert)
                     # elif command == "titles":
@@ -56,10 +55,9 @@ class Command(BaseCommand):
                     #             pk=data_to_insert.get("category")
                     #         ),
                     #     )
-                    
+
             self.stdout.write(
-                self.style.SUCCESS(
-                    'Successfully loaded the file "%s"' % filename)
+                self.style.SUCCESS('Successfully loaded the file "%s"' % filename)
             )
         except IOError:
             raise CommandError("File '%s' does not exist" % filename) from None

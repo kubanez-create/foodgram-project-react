@@ -7,7 +7,5 @@ class ReadOrListOnlyViewSet(
     pass
 
 
-class ListViewSet(
-    mixins.ListModelMixin, viewsets.GenericViewSet
-):
+class ListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     pass
