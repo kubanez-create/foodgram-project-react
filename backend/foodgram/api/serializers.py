@@ -2,7 +2,8 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserCreateSerializer, UserSerializer
+from djoser.serializers import (UserCreateSerializer, UserSerializer,
+                                SetPasswordSerializer)
 from rest_framework import serializers
 from users.models import CustomUser
 
@@ -172,6 +173,19 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         model = CustomUser
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'password')
+
+
+class CustomSetPasswordSerializer(SetPasswordSerializer):
+    username = serializers.CharField(required=True, write_only=True)
+    first_name = serializers.CharField(required=True, write_only=True)
+    last_name = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        attrs['username'] = self.context['request'].data.get('username')
+        attrs['first_name'] = self.context['request'].data.get('first_name')
+        attrs['last_name'] = self.context['request'].data.get('last_name')
+        return attrs
 
 
 class FavoritesSerializer(serializers.ModelSerializer):

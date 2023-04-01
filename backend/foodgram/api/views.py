@@ -15,6 +15,7 @@ from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     CustomUserCreateSerializer,
     CustomUserSerializer,
+    CustomSetPasswordSerializer,
     DownloadSerializer,
     FavoritesSerializer,
     FollowSerializer,
@@ -116,11 +117,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class UserViewSet(UV):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
         if self.action == 'create':
             return CustomUserCreateSerializer
+        elif self.action == 'set_password':
+            return CustomSetPasswordSerializer
         return CustomUserSerializer
 
     def get_permissions(self):
@@ -129,6 +131,18 @@ class UserViewSet(UV):
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
+
+    @action(["post"], detail=False)
+    def set_password(self, request, *args, **kwargs):
+        whole_data = request.data
+        whole_data['username'] = request.user.username
+        whole_data['first_name'] = request.user.first_name
+        whole_data['last_name'] = request.user.last_name
+        serializer = self.get_serializer(data=whole_data)
+        serializer.is_valid(raise_exception=True)
+        self.request.user.set_password(serializer.data["new_password"])
+        self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
