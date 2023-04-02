@@ -2,11 +2,14 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from djoser.serializers import (UserCreateSerializer, UserSerializer,
-                                SetPasswordSerializer)
+from djoser.serializers import (
+    SetPasswordSerializer,
+    UserCreateSerializer,
+    UserSerializer,
+)
 from rest_framework import serializers
-from users.models import CustomUser
 
+from users.models import CustomUser
 from .models import Ingredients, RecipeIngredients, Recipes, Tags
 
 
@@ -71,7 +74,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(many=True)
-    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
 
     class Meta:
         model = Recipes
@@ -114,8 +118,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe = Recipes.objects.create(**validated_data)
         tags_list = []
         for i in ingredients:
-            current_ingredient = get_object_or_404(Ingredients,
-                                                   name=i.get('name'))
+            current_ingredient = get_object_or_404(
+                Ingredients, name=i.get('name'))
             RecipeIngredients.objects.create(
                 recipe=recipe, ingredient=current_ingredient,
                 amount=i.get('amount')
@@ -272,7 +276,7 @@ class FollowSerializer(serializers.ModelSerializer):
         """
         query = self.context.get('request')
         if query and query.query_params.get('recipes_limit'):
-            qs = obj.recipes.all()[:int(query.get('recipes_limit')[0])]
+            qs = obj.recipes.all()[: int(query.get('recipes_limit')[0])]
             serializer = RecipeFollowSerializer(qs, many=True)
             return serializer.data
         serializer = RecipeFollowSerializer(obj.recipes.all(), many=True)

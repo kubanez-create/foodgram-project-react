@@ -1,10 +1,10 @@
 import tempfile
 
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum
-from djoser.views import UserViewSet as UV
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet as UV
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -14,9 +14,9 @@ from .mixins import ListViewSet, ReadOrListOnlyViewSet
 from .models import Ingredients, Recipes, Tags, User
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
+    CustomSetPasswordSerializer,
     CustomUserCreateSerializer,
     CustomUserSerializer,
-    CustomSetPasswordSerializer,
     DownloadSerializer,
     FavoritesSerializer,
     FollowSerializer,
@@ -54,8 +54,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_permissions(self):
-        if self.action in ['create', 'partial_update', 'favorite',
-                           'shopping_cart']:
+        if self.action in [
+            'create', 'partial_update', 'favorite', 'shopping_cart']:
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.AllowAny]
@@ -80,14 +80,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = FavoritesSerializer(recipe, data=data, partial=True)
             if serializer.is_valid():
                 recipe.favorited.add(request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
             if request.user not in recipe.favorited.all():
                 return Response(
-                    {'errors': (f'Рецепт {recipe} не '
-                                 'находился в Избранном')},
+                    {'errors': (
+                        f'Рецепт {recipe} не '
+                        'находился в Избранном')},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             else:
@@ -106,14 +109,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = ShoppingSerializer(recipe, data=data, partial=True)
             if serializer.is_valid():
                 recipe.shopping_cart.add(request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
             if request.user not in recipe.shopping_cart.all():
                 return Response(
-                    {'errors': (f'Рецепт {recipe} не '
-                                 'находился в корзине')},
+                    {'errors': (f'Рецепт {recipe} не ' 'находился в корзине')},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             else:
@@ -139,7 +143,7 @@ class UserViewSet(UV):
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
 
-    @action(["post"], detail=False)
+    @action(['post'], detail=False)
     def set_password(self, request, *args, **kwargs):
         whole_data = request.data
         whole_data['username'] = request.user.username
@@ -147,7 +151,7 @@ class UserViewSet(UV):
         whole_data['last_name'] = request.user.last_name
         serializer = self.get_serializer(data=whole_data)
         serializer.is_valid(raise_exception=True)
-        self.request.user.set_password(serializer.data["new_password"])
+        self.request.user.set_password(serializer.data['new_password'])
         self.request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -163,8 +167,10 @@ class UserViewSet(UV):
             serializer = FollowSerializer(writer, data=data, partial=True)
             if serializer.is_valid():
                 writer.subscribed.add(request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
             links = writer.subscribed.through.objects.all()
@@ -193,9 +199,8 @@ class ShoppingViewSet(ListViewSet):
     def list(self, request, *args, **kwargs):
         user_shopping_recipes = self.request.user.shopping.select_related()
         qs = Ingredients.objects.annotate(
-            total=Sum('recipeingredients__amount',
-                      distinct=True)).filter(
-                          recipeingredients__recipe__in=user_shopping_recipes)
+            total=Sum('recipeingredients__amount', distinct=True)
+        ).filter(recipeingredients__recipe__in=user_shopping_recipes)
 
         serializer = self.get_serializer(qs, many=True)
         result = [
@@ -203,11 +208,11 @@ class ShoppingViewSet(ListViewSet):
             for i in serializer.data
         ]
         with tempfile.TemporaryDirectory() as tmpdirname:
-            with open(tmpdirname+'/shopping_list.txt', 'w') as f:
+            with open(tmpdirname + '/shopping_list.txt', 'w') as f:
                 f.write('\n'.join(result))
-            response = HttpResponse(tmpdirname+'/shopping_list.txt',
-                                    content_type='text/txt')
-            response[
-                'Content-Disposition'
-                ] = 'attachment; filename=shopping_list.txt'
+            response = HttpResponse(
+                tmpdirname + '/shopping_list.txt', content_type='text/txt'
+            )
+            response['Content-Disposition'] = \
+            'attachment; filename=shopping_list.txt'
             return response
