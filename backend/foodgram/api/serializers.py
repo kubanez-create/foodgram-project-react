@@ -197,7 +197,7 @@ class FavoritesSerializer(serializers.ModelSerializer):
         request_author = self.initial_data.get('favorited')
         recipe_id = self.instance.id
         favorites = request_author.favorites.select_related('author')
-        if favorites.filter(id__in=[recipe_id]).exists():
+        if favorites.filter(id=recipe_id).exists():
             raise serializers.ValidationError('Данный рецепт уже в избранных.')
         return data
 
@@ -211,7 +211,7 @@ class ShoppingSerializer(serializers.ModelSerializer):
         request_author = self.initial_data.get('shopping_cart')
         recipe_id = self.instance.id
         shopping = request_author.shopping.select_related('author')
-        if shopping.filter(id__in=[recipe_id]).exists():
+        if shopping.filter(id=recipe_id).exists():
             raise serializers.ValidationError('Данный рецепт уже в корзине.')
         return data
 
@@ -225,7 +225,7 @@ class RecipeFollowSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    recipes = RecipeFollowSerializer(many=True)
+    recipes = serializers.SerializerMethodField()
 
     class Meta:
         fields = (
@@ -251,8 +251,32 @@ class FollowSerializer(serializers.ModelSerializer):
             return True
 
     def get_recipes_count(self, obj):
-        # records = obj.recipes.all()
+        """
+        Return number of recipes.
+
+        Return whichever the minimal value is between number of
+        recipes the author of request has and recipes_limit query
+        if there is any.
+        """
+        query = self.context.get('request')
+        if query and query.query_params.get('recipes_limit'):
+            return min(int(query.get('recipes_limit')[0]), obj.recipes.count())
         return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        """
+        Get and serialize recipes.
+
+        Return serialized recipe objects potentially filtered against
+        'recipes_limit' query.
+        """
+        query = self.context.get('request')
+        if query and query.query_params.get('recipes_limit'):
+            qs = obj.recipes.all()[:int(query.get('recipes_limit')[0])]
+            serializer = RecipeFollowSerializer(qs, many=True)
+            return serializer.data
+        serializer = RecipeFollowSerializer(obj.recipes.all(), many=True)
+        return serializer.data
 
     def validate(self, data):
         if not (self.instance != self.initial_data.get('subscribed')):

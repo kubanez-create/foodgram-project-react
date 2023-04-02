@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'djoser',
-    'core.apps.CoreConfig',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig'
 ]

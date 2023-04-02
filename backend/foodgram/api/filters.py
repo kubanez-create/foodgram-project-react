@@ -3,11 +3,6 @@ from django_filters import rest_framework as filters
 from api.models import Ingredients, Recipes
 
 
-# class MyFilterBackend(filters.DjangoFilterBackend):
-#     def get_filterset(self, request, queryset, view):
-#         filterset_base = super().get_filterset(request, queryset, view)
-
-#         return filterset_base
 class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
 
@@ -30,12 +25,20 @@ class RecipeFilter(filters.FilterSet):
     tags = MultipleFilter(field_name='tags__slug')
     is_favorited = filters.CharFilter(field_name='favorited',
                                       method='filter_favorited')
+    is_in_shopping_cart = filters.CharFilter(field_name='shopping_cart',
+                                      method='filter_shopping')
 
     def filter_favorited(self, queryset, name, value):
-        if not value or not self.request.auth:
+        if any((not int(value), not self.request.auth)):
             return queryset
         else:
             return self.request.user.favorites.all()
+
+    def filter_shopping(self, queryset, name, value):
+        if any((not int(value), not self.request.auth)):
+            return queryset
+        else:
+            return self.request.user.shopping.all()
 
 
     class Meta:

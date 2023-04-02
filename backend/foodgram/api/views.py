@@ -55,7 +55,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_permissions(self):
-        if self.action == 'create' or self.action == 'partial_update':
+        if self.action in ['create', 'partial_update', 'favorite',
+                           'shopping_cart']:
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.AllowAny]
@@ -69,10 +70,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['POST', 'DELETE'],
-        permission_classes=[IsAuthorOrReadOnlyPermission],
+        permission_classes=[
+            permissions.IsAuthenticated, IsAuthorOrReadOnlyPermission],
     )
     def favorite(self, request, pk=None):
         recipe = get_object_or_404(Recipes, pk=pk)
+        self.check_object_permissions(self.request, recipe)
         if request.method == 'POST':
             data = {'favorited': request.user}
             serializer = FavoritesSerializer(recipe, data=data, partial=True)
@@ -131,7 +134,7 @@ class UserViewSet(UV):
         return CustomUserSerializer
 
     def get_permissions(self):
-        if self.action == 'retrieve' or self.action == 'me':
+        if self.action in ['retrieve', 'me', 'set_password', 'subscribe']:
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.AllowAny]
