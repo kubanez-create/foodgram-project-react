@@ -5,9 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from djoser.views import UserViewSet as UV
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeFilter
