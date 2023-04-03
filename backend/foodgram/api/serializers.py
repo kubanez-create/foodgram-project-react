@@ -29,18 +29,6 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tags
         fields = '__all__'
 
-    def to_representation(self, instance):
-        return {
-            'id': instance.id,
-            'name': instance.name,
-            'color': instance.color,
-            'slug': instance.slug,
-        }
-
-    def to_internal_value(self, data):
-        inst = get_object_or_404(Tags, pk=data)
-        return {'name': inst.name, 'slug': inst.slug, 'color': inst.color}
-
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,6 +41,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         model = RecipeIngredients
         fields = ('id', 'recipe', 'ingredient', 'amount')
 
+    # rewrote method to comply with technical specifications
     def to_representation(self, instance):
         return {
             'id': instance.id,
@@ -61,6 +50,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             'amount': instance.recipeingredients_set.all()[0].amount,
         }
 
+    # rewrote method to comply with technical specifications
     def to_internal_value(self, data):
         inst = get_object_or_404(Ingredients, pk=data.get('id'))
         return {
@@ -165,8 +155,9 @@ class CustomUserSerializer(UserSerializer):
                   'is_subscribed')
 
     def get_is_subscribed(self, obj):
+        """Handle the need of is_subscribed info for anonymous user."""
         request = self.context.get('request')
-        if not bool(request.auth):
+        if not request.auth:
             return False
         else:
             return request.user in obj.customuser_set.all()
@@ -185,6 +176,11 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
     last_name = serializers.CharField(required=True, write_only=True)
 
     def validate(self, attrs):
+        """Provide additional attributes.
+
+        We use djoser's serializers which don't have username, first and last
+         name fields so we need provide them.
+        """
         attrs = super().validate(attrs)
         attrs['username'] = self.context['request'].data.get('username')
         attrs['first_name'] = self.context['request'].data.get('first_name')
@@ -245,6 +241,12 @@ class FollowSerializer(serializers.ModelSerializer):
         model = CustomUser
 
     def get_is_subscribed(self, obj):
+        """
+        Check whether the request user is subscribed.
+
+        Returns bool value which answer whether the request user is subscribed
+         to the user which token was provided in request. 
+        """
         links = obj.subscribed.through.objects.select_related()
         if hasattr(self, 'initial_data'):
             return links.filter(
@@ -301,5 +303,6 @@ class DownloadSerializer(serializers.ModelSerializer):
         fields = ('name', 'amount', 'measurement_unit')
         model = Ingredients
 
+    #return annotated value for an ingredient
     def get_amount(self, obj):
         return obj.total

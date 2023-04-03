@@ -46,15 +46,7 @@ class Command(BaseCommand):
                     special_models = ["recipes"]
                     if command not in special_models:
                         model.objects.create(**data_to_insert)
-                    # elif command == "titles":
-                    #     model.objects.create(
-                    #         id=data_to_insert.get("id"),
-                    #         name=data_to_insert.get("name"),
-                    #         year=data_to_insert.get("year"),
-                    #         category=Category.objects.get(
-                    #             pk=data_to_insert.get("category")
-                    #         ),
-                    #     )
+
 
             self.stdout.write(
                 self.style.SUCCESS('Successfully loaded the file "%s"' % filename)

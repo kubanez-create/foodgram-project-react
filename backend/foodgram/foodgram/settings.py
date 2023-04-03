@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -122,8 +121,3 @@ REST_FRAMEWORK = {
                                 'LimitOffsetPagination',
     "PAGE_SIZE": 6,
 }
-
-
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# SENDER = 'from@example.com'

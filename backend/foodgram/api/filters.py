@@ -12,6 +12,8 @@ class IngredientFilter(filters.FilterSet):
         fields = ["name"]
 
 
+# next two classes is a way to filter (possibly) multiple tags
+# as a union set ("or")
 class MultipleField(MultipleChoiceField):
     def valid_value(self, value):
         return True
@@ -30,6 +32,8 @@ class RecipeFilter(filters.FilterSet):
         field_name="shopping_cart", method="filter_shopping"
     )
 
+    # if we have anonymous request or query with zero value - return basic
+    # queryset, fitered queryset otherwise
     def filter_favorited(self, queryset, name, value):
         if any((not int(value), not self.request.auth)):
             return queryset

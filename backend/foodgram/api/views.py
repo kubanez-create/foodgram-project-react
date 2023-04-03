@@ -74,7 +74,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk=None):
         recipe = get_object_or_404(Recipes, pk=pk)
-        self.check_object_permissions(self.request, recipe)
         if request.method == 'POST':
             data = {'favorited': request.user}
             serializer = FavoritesSerializer(recipe, data=data, partial=True)
@@ -143,6 +142,8 @@ class UserViewSet(UV):
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
 
+    # applied djoser's serializer doesn't have username, first and last name
+    # field so we need to provide them
     @action(['post'], detail=False)
     def set_password(self, request, *args, **kwargs):
         whole_data = request.data
@@ -197,17 +198,29 @@ class ShoppingViewSet(ListViewSet):
     serializer_class = DownloadSerializer
 
     def list(self, request, *args, **kwargs):
+        """
+        Calculate and return list on ingredients for a shopping cart.
+
+        Annotate ingredients, filter them against the list of chosen recipes
+        then return it in txt file.
+        """
+        # select recipes in shopping cart of a request user
         user_shopping_recipes = self.request.user.shopping.select_related()
+        # get annotated queryset for ingredients
+        # use Sum(distinct=True) to get total amount w\0 double counting
         qs = Ingredients.objects.annotate(
             total=Sum('recipeingredients__amount', distinct=True)
         ).filter(recipeingredients__recipe__in=user_shopping_recipes)
 
         serializer = self.get_serializer(qs, many=True)
+        # get a string to write into txt file
         result = [
             f' - {i["name"]} ({i["measurement_unit"]}) - {i["amount"]}'
             for i in serializer.data
         ]
+        # use temp directory keep working directory clean
         with tempfile.TemporaryDirectory() as tmpdirname:
+            # write list of ingredients into txt file
             with open(tmpdirname + '/shopping_list.txt', 'w') as f:
                 f.write('\n'.join(result))
             response = HttpResponse(
