@@ -6,8 +6,14 @@ from users.models import CustomUser
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'author')
-    list_filter = ('author', 'name')
+    list_display_links = ('name',)
+    readonly_fields = ('total_favorited', )
+    list_filter = ('author', 'name', 'tags')
     empty_value_display = '-пусто-'
+
+    @admin.display(description='В избранном')
+    def total_favorited(self, obj):
+        return f'Общее количество добавлений в избранное {obj.favorited.count()}'
 
 
 class UserAdmin(admin.ModelAdmin):
