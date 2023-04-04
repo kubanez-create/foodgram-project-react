@@ -266,7 +266,8 @@ class FollowSerializer(serializers.ModelSerializer):
         """
         query = self.context.get('request')
         if query and query.query_params.get('recipes_limit'):
-            return min(int(query.get('recipes_limit')[0]), obj.recipes.count())
+            return min(int(query.query_params.get('recipes_limit')[0]),
+                       obj.recipes.count())
         return obj.recipes.count()
 
     def get_recipes(self, obj):
@@ -278,7 +279,8 @@ class FollowSerializer(serializers.ModelSerializer):
         """
         query = self.context.get('request')
         if query and query.query_params.get('recipes_limit'):
-            qs = obj.recipes.all()[: int(query.get('recipes_limit')[0])]
+            qs = obj.recipes.all(
+            )[: int(query.query_params.get('recipes_limit')[0])]
             serializer = RecipeFollowSerializer(qs, many=True)
             return serializer.data
         serializer = RecipeFollowSerializer(obj.recipes.all(), many=True)
