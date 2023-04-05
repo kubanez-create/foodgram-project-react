@@ -29,6 +29,10 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tags
         fields = '__all__'
 
+    def to_internal_value(self, data):
+        inst = get_object_or_404(Tags, pk=data)
+        return inst
+
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -106,7 +110,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipes.objects.create(**validated_data)
-        tags_list = []
         for i in ingredients:
             current_ingredient = get_object_or_404(
                 Ingredients, name=i.get('name'))
@@ -114,10 +117,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 recipe=recipe, ingredient=current_ingredient,
                 amount=i.get('amount')
             )
-        for t in tags:
-            current_tag = Tags.objects.get(slug=t.get('slug'))
-            tags_list.append(current_tag)
-        recipe.tags.add(*tags_list)
+        recipe.tags.add(*tags)
         return recipe
 
     def update(self, instance, validated_data):
