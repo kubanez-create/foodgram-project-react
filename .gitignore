@@ -134,3 +134,5 @@ dmypy.json
 *.http
 .trunk
 .trunk/
+.vscode
+.vscode/
