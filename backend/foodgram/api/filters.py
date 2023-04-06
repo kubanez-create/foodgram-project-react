@@ -37,14 +37,12 @@ class RecipeFilter(filters.FilterSet):
     def filter_favorited(self, queryset, name, value):
         if any((not int(value), not self.request.auth)):
             return queryset
-        else:
-            return self.request.user.favorites.all()
+        return queryset.filter(favorited=self.request.user)
 
     def filter_shopping(self, queryset, name, value):
         if any((not int(value), not self.request.auth)):
             return queryset
-        else:
-            return self.request.user.shopping.all()
+        return queryset.filter(shopping_cart=self.request.user)
 
     class Meta:
         model = Recipes

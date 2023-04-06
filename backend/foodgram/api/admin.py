@@ -1,7 +1,12 @@
 from django.contrib import admin
 
-from .models import Ingredients, Tags, Recipes
+from .models import Ingredients, Tags, Recipes, RecipeIngredients
 from users.models import CustomUser
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredients
+    min_num = 1
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -10,6 +15,7 @@ class RecipeAdmin(admin.ModelAdmin):
     readonly_fields = ('total_favorited', )
     list_filter = ('author', 'name', 'tags')
     empty_value_display = '-пусто-'
+    inlines = (RecipeIngredientInline, )
 
     @admin.display(description='В избранном')
     def total_favorited(self, obj):
