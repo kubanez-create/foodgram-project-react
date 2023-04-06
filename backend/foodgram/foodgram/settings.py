@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,7 +25,8 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'api.apps.ApiConfig',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig'
 ]
 
 MIDDLEWARE = [
@@ -65,8 +67,8 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
         'HOST': os.getenv('DB_HOST', default='localhost'),
         'PORT': os.getenv('DB_PORT', default='5432'),
-        },
-    }
+    },
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [

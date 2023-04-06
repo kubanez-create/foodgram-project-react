@@ -2,15 +2,12 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from djoser.serializers import (
-    SetPasswordSerializer,
-    UserCreateSerializer,
-    UserSerializer,
-)
+from djoser.serializers import (SetPasswordSerializer, UserCreateSerializer,
+                                UserSerializer)
 from rest_framework import serializers
 
+from recipes.models import Ingredients, RecipeIngredients, Recipes, Tags
 from users.models import CustomUser
-from .models import Ingredients, RecipeIngredients, Recipes, Tags
 
 
 class Base64ImageField(serializers.ImageField):
@@ -30,8 +27,7 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_internal_value(self, data):
-        inst = get_object_or_404(Tags, pk=data)
-        return inst
+        return get_object_or_404(Tags, pk=data)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -254,7 +250,7 @@ class FollowSerializer(serializers.ModelSerializer):
         Check whether the request user is subscribed.
 
         Returns bool value which answer whether the request user is subscribed
-         to the user which token was provided in request. 
+         to the user which token was provided in request.
         """
         links = obj.subscribed.through.objects.select_related()
         if hasattr(self, 'initial_data'):
@@ -313,6 +309,6 @@ class DownloadSerializer(serializers.ModelSerializer):
         fields = ('name', 'amount', 'measurement_unit')
         model = Ingredients
 
-    #return annotated value for an ingredient
+    # return annotated value for an ingredient
     def get_amount(self, obj):
         return obj.total

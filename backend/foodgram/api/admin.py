@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Ingredients, Tags, Recipes, RecipeIngredients
+from recipes.models import Ingredients, RecipeIngredients, Recipes, Tags
 from users.models import CustomUser
 
 
@@ -12,14 +12,15 @@ class RecipeIngredientInline(admin.TabularInline):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'author')
     list_display_links = ('name',)
-    readonly_fields = ('total_favorited', )
+    readonly_fields = ('total_favorited',)
     list_filter = ('author', 'name', 'tags')
     empty_value_display = '-пусто-'
-    inlines = (RecipeIngredientInline, )
+    inlines = (RecipeIngredientInline,)
 
     @admin.display(description='В избранном')
     def total_favorited(self, obj):
-        return f'Общее количество добавлений в избранное {obj.favorited.count()}'
+        return ('Общее количество добавлений в избранное '
+                f'{obj.favorited.count()}')
 
 
 class UserAdmin(admin.ModelAdmin):

@@ -1,32 +1,24 @@
 import tempfile
 
 from django.db.models import Sum
-# from django.http import HttpResponse
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as UV
+from djoser.views import UserViewSet as DjoserUserView
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from recipes.models import Ingredients, Recipes, Tags, User
 from .filters import IngredientFilter, RecipeFilter
 from .mixins import ListViewSet, ReadOrListOnlyViewSet
-from .models import Ingredients, Recipes, Tags, User
 from .permissions import IsAuthorOrReadOnlyPermission
-from .serializers import (
-    CustomSetPasswordSerializer,
-    CustomUserCreateSerializer,
-    CustomUserSerializer,
-    DownloadSerializer,
-    FavoritesSerializer,
-    FollowSerializer,
-    IngredientSerializer,
-    RecipeCreateSerializer,
-    RecipeSerializer,
-    ShoppingSerializer,
-    TagSerializer,
-)
+from .serializers import (CustomSetPasswordSerializer,
+                          CustomUserCreateSerializer, CustomUserSerializer,
+                          DownloadSerializer, FavoritesSerializer,
+                          FollowSerializer, IngredientSerializer,
+                          RecipeCreateSerializer, RecipeSerializer,
+                          ShoppingSerializer, TagSerializer)
 
 
 class TagViewSet(ReadOrListOnlyViewSet):
@@ -55,14 +47,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     # Удалил пермишен классы из actions и оставил их определение здесь
-    # т.к. нам нужно предоставлять доступ не авторизованным пользователям к 
+    # т.к. нам нужно предоставлять доступ не авторизованным пользователям к
     # списку пользователей и переопределение метода get_permissions позволяет
     # нам определить пользовательские разрешения достаточно сжатым кодом
     def get_permissions(self):
         if self.action in ['create', 'partial_update']:
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ['favorite', 'shopping_cart']:
-            permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnlyPermission]
+            permission_classes = [
+                permissions.IsAuthenticated,
+                IsAuthorOrReadOnlyPermission,
+            ]
         else:
             permission_classes = [permissions.AllowAny]
         return [permission() for permission in permission_classes]
@@ -83,20 +78,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = FavoritesSerializer(recipe, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
             recipe.favorited.add(request.user)
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
             if request.user not in recipe.favorited.all():
                 return Response(
-                    {'errors': (
-                        f'Рецепт {recipe} не '
-                        'находился в Избранном')},
+                    {'errors': (f'Рецепт {recipe} не '
+                                'находился в Избранном')},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            else:
-                recipe.favorited.remove(request.user)
-                return Response(status=status.HTTP_204_NO_CONTENT)
+            recipe.favorited.remove(request.user)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return None
 
     @action(
         detail=True,
@@ -109,8 +102,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = ShoppingSerializer(recipe, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
             recipe.shopping_cart.add(request.user)
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
             if request.user not in recipe.shopping_cart.all():
@@ -120,9 +112,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
             recipe.shopping_cart.remove(request.user)
             return Response(status=status.HTTP_204_NO_CONTENT)
+        return None
 
 
-class UserViewSet(UV):
+class UserViewSet(DjoserUserView):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
 
@@ -166,8 +159,7 @@ class UserViewSet(UV):
             serializer = FollowSerializer(writer, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
             writer.subscribed.add(request.user)
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
             links = writer.subscribed.through.objects.all()
@@ -180,6 +172,7 @@ class UserViewSet(UV):
                 )
             writer.subscribed.remove(request.user)
             return Response(status=status.HTTP_204_NO_CONTENT)
+        return None
 
 
 class SubscriptionsViewSet(ListViewSet):
@@ -218,10 +211,11 @@ class ShoppingViewSet(ListViewSet):
             # write list of ingredients into txt file
             with open(tmpdirname + '/shopping_list.txt', 'w') as f:
                 f.write('\n'.join(result))
-            response = FileResponse(open(
-                tmpdirname + '/shopping_list.txt', 'rb'),
+            response = FileResponse(
+                open(tmpdirname + '/shopping_list.txt', 'rb'),
                 content_type='text/plain'
             )
-            response['Content-Disposition'] = \
-            'attachment; filename=shopping_list.txt'
+            response[
+                'Content-Disposition'
+            ] = 'attachment; filename=shopping_list.txt'
             return response

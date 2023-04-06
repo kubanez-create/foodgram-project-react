@@ -47,9 +47,9 @@ class Command(BaseCommand):
                     if command not in special_models:
                         model.objects.create(**data_to_insert)
 
-
             self.stdout.write(
-                self.style.SUCCESS('Successfully loaded the file "%s"' % filename)
+                self.style.SUCCESS('Successfully loaded the file "%s"'
+                                   % filename)
             )
         except IOError:
             raise CommandError("File '%s' does not exist" % filename) from None

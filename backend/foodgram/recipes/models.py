@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 User = get_user_model()
@@ -43,9 +43,9 @@ class Recipes(models.Model):
         through='RecipeIngredients'
     )
     favorited = models.ManyToManyField(User, related_name='favorites',
-                                        blank=True)
+                                       blank=True)
     shopping_cart = models.ManyToManyField(User, related_name='shopping',
-                                                 blank=True)
+                                           blank=True)
     name = models.CharField('Name', max_length=200)
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления',
