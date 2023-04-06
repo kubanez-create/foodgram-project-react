@@ -40,6 +40,22 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name', 'last_name',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        """Handle the need of is_subscribed info for anonymous user."""
+        request = self.context.get('request')
+        if not request.auth:
+            return False
+        return request.user in obj.customuser_set.all()
+
+
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredients
@@ -91,6 +107,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(many=True)
+    author = CustomUserSerializer(required=False)
 
     class Meta:
         model = Recipes
@@ -99,6 +116,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'tags',
             'image',
             'ingredients',
+            'author',
             'name',
             'text',
             'cooking_time',
@@ -110,13 +128,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipes.objects.create(**validated_data)
-        for i in ingredients:
+        recipe_ingredients = []
+        for ingredient in ingredients:
             current_ingredient = get_object_or_404(
-                Ingredients, name=i.get('name'))
-            RecipeIngredients.objects.create(
+                Ingredients, name=ingredient.get('name'))
+            recipe_ingredients.append(RecipeIngredients(
                 recipe=recipe, ingredient=current_ingredient,
-                amount=i.get('amount')
-            )
+                amount=ingredient.get('amount')
+            ))
+        RecipeIngredients.objects.bulk_create(recipe_ingredients)
         recipe.tags.add(*tags)
         return recipe
 
@@ -138,29 +158,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredients_data = validated_data.pop('ingredients')
             lst = []
             for ingredient in ingredients_data:
-                curr_ingredient, _ = RecipeIngredients.objects.get_or_create(
+                if not RecipeIngredients.objects.filter(
                     recipe=instance,
                     ingredient=ingredient.get('name'),
-                    amount=ingredient.get('amount'),
-                )
+                    amount=ingredient.get('amount')
+                ).exists():
+                    lst.append(RecipeIngredients(
+                        recipe=instance,
+                        ingredient=ingredient.get('name'),
+                        amount=ingredient.get('amount')
+                    ))
+            RecipeIngredients.objects.bulk_create(lst)
         return instance
-
-
-class CustomUserSerializer(UserSerializer):
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta(UserSerializer.Meta):
-        model = CustomUser
-        fields = ('id', 'username', 'email', 'first_name', 'last_name',
-                  'is_subscribed')
-
-    def get_is_subscribed(self, obj):
-        """Handle the need of is_subscribed info for anonymous user."""
-        request = self.context.get('request')
-        if not request.auth:
-            return False
-        else:
-            return request.user in obj.customuser_set.all()
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -253,8 +262,7 @@ class FollowSerializer(serializers.ModelSerializer):
                 from_customuser=obj,
                 to_customuser=self.initial_data.get('subscribed')
             ).exists()
-        else:
-            return True
+        return True
 
     def get_recipes_count(self, obj):
         """
