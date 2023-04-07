@@ -27,8 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
@@ -39,6 +37,7 @@ jobs:
           script: |
               sudo docker compose stop
               sudo docker compose rm backend
+              pwd
               ls -la
               touch .env
               echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
