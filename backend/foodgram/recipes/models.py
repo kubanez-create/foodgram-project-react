@@ -74,7 +74,7 @@ class Recipes(models.Model):
         ]
         verbose_name = 'Recipe'
         verbose_name_plural = 'Recipes'
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
 
     def is_favorited(self):
         return User.objects.filter(favorites__id=self.id).exists()

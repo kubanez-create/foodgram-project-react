@@ -179,7 +179,7 @@ class SubscriptionsViewSet(ListViewSet):
     serializer_class = FollowSerializer
 
     def get_queryset(self):
-        return self.request.user.subscribed.all()
+        return self.request.user.customuser_set.all()
 
 
 class ShoppingViewSet(ListViewSet):
