@@ -51,9 +51,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # списку пользователей и переопределение метода get_permissions позволяет
     # нам определить пользовательские разрешения достаточно сжатым кодом
     def get_permissions(self):
-        if self.action in ['create', 'partial_update']:
+        if self.action == 'create':
             permission_classes = [permissions.IsAuthenticated]
-        elif self.action in ['favorite', 'shopping_cart']:
+        elif self.action in ['favorite', 'shopping_cart', 'partial_update']:
             permission_classes = [
                 permissions.IsAuthenticated,
                 IsAuthorOrReadOnlyPermission,

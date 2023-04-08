@@ -132,24 +132,23 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
         instance.image = validated_data.get('image', instance.image)
         if 'tags' in validated_data:
-            tags_data = validated_data.pop('tags')
-            lst = []
-            for tag in tags_data:
-                current_tag = Tags.objects.get(slug=tag.get('slug'))
-                lst.append(current_tag)
-            instance.tags.set(lst)
+            instance.tags.set(validated_data.pop('tags'))
         if 'ingredients' in validated_data:
             ingredients_data = validated_data.pop('ingredients')
             lst = []
             for ingredient in ingredients_data:
                 if not RecipeIngredients.objects.filter(
                     recipe=instance,
-                    ingredient=ingredient.get('name'),
+                    ingredient=get_object_or_404(
+                        Ingredients,
+                        name=ingredient.get('name')),
                     amount=ingredient.get('amount')
                 ).exists():
                     lst.append(RecipeIngredients(
                         recipe=instance,
-                        ingredient=ingredient.get('name'),
+                        ingredient=get_object_or_404(
+                            Ingredients,
+                            name=ingredient.get('name')),
                         amount=ingredient.get('amount')
                     ))
             RecipeIngredients.objects.bulk_create(lst)
