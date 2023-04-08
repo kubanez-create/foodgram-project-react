@@ -10,17 +10,6 @@ from recipes.models import Ingredients, RecipeIngredients, Recipes, Tags
 from users.models import CustomUser
 
 
-# class Base64ImageField(serializers.ImageField):
-#     def to_internal_value(self, data):
-#         if isinstance(data, str) and data.startswith('data:image'):
-#             format, imgstr = data.split(';base64,')
-#             ext = format.split('/')[-1]
-
-#             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
-#         return super().to_internal_value(data)
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tags
@@ -80,8 +69,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(max_length=None, use_url=True)
     tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(many=True)
-    author = serializers.SlugRelatedField(
-        slug_field='username', read_only=True)
+    author = CustomUserSerializer(required=False)
 
     class Meta:
         model = Recipes
