@@ -152,6 +152,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                         amount=ingredient.get('amount')
                     ))
             RecipeIngredients.objects.bulk_create(lst)
+        instance.save()
         return instance
 
 
