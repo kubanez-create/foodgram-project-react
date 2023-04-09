@@ -38,7 +38,7 @@ class CustomUserSerializer(UserSerializer):
         request = self.context.get('request')
         if not request.auth:
             return False
-        return request.user in obj.customuser_set.all()
+        return request.user in obj.subscribed.all()
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
