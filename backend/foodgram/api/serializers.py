@@ -44,15 +44,15 @@ class CustomUserSerializer(UserSerializer):
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredients
-        fields = ('id', 'recipe', 'ingredient', 'amount')
+        fields = '__all__'
 
     # rewrote method to comply with technical specifications
-    def to_representation(self, instance):
+    def to_representation(self, value):
         return {
-            'id': instance.id,
-            'name': instance.name,
-            'measurement_unit': instance.measurement_unit,
-            'amount': instance.recipeingredients_set.all()[0].amount,
+            'id': value.ingredient.id,
+            'name': value.ingredient.name,
+            'measurement_unit': value.ingredient.measurement_unit,
+            'amount': value.amount
         }
 
     # rewrote method to comply with technical specifications
@@ -68,7 +68,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(max_length=None, use_url=True)
     tags = TagSerializer(many=True)
-    ingredients = RecipeIngredientSerializer(many=True)
+    ingredients = RecipeIngredientSerializer(
+        many=True, source='recipeingredients_set')
     author = CustomUserSerializer(required=False)
 
     class Meta:
@@ -90,7 +91,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(many=True)
-    ingredients = RecipeIngredientSerializer(many=True)
+    ingredients = RecipeIngredientSerializer(
+        many=True, source='recipeingredients_set')
     author = CustomUserSerializer(required=False)
 
     class Meta:
@@ -109,7 +111,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
+        ingredients = validated_data.pop('recipeingredients_set')
         tags = validated_data.pop('tags')
         recipe = Recipes.objects.create(**validated_data)
         recipe_ingredients = []
