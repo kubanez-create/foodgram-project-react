@@ -1,8 +1,9 @@
 """Custom manage.py command for loading csv files into project database."""
 import csv
 
-from recipes.models import Ingredients, Recipes, Tags
 from django.core.management.base import BaseCommand, CommandError
+
+from recipes.models import Ingredients, Recipes, Tags
 from users.models import CustomUser
 
 COMMANDS = {

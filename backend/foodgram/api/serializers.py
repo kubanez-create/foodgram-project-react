@@ -1,10 +1,8 @@
-from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from djoser.serializers import (SetPasswordSerializer, UserCreateSerializer,
                                 UserSerializer)
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-
 
 from recipes.models import Ingredients, RecipeIngredients, Recipes, Tags
 from users.models import CustomUser
