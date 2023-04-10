@@ -76,9 +76,6 @@ class Recipes(models.Model):
         verbose_name_plural = 'Recipes'
         ordering = ['-pub_date']
 
-    def is_in_shopping_cart(self):
-        return User.objects.filter(shopping__id=self.id).exists()
-
     def __str__(self):
         return self.text
 

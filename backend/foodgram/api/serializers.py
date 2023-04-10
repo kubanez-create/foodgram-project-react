@@ -72,6 +72,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True, source='recipeingredients_set')
     author = CustomUserSerializer(required=False)
     is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipes
@@ -93,7 +94,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         Check whether the request user has the recipe in favorites.
         """
         return obj.favorited.filter(
-            id=self.context.get('request').user.id).exists() 
+            id=self.context.get('request').user.id).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        """
+        Check whether the request user has the recipe in a cart.
+        """
+        return obj.shopping_cart.filter(
+            id=self.context.get('request').user.id).exists()
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
