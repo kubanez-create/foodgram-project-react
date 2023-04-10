@@ -195,12 +195,19 @@ class ShoppingViewSet(ListViewSet):
         # select recipes in shopping cart of a request user
         user_shopping_recipes = self.request.user.shopping.select_related()
         # get annotated queryset for ingredients
-        # use Sum(distinct=True) to get total amount w\0 double counting
-        qs = Ingredients.objects.annotate(
-            total=Sum('recipeingredients__amount', distinct=True)
-        ).filter(recipeingredients__recipe__in=user_shopping_recipes)
+        # use Sum(distinct=True) to get total amount w\o double counting
+        qs = Ingredients.objects.filter(
+            recipeingredients__recipe__in=user_shopping_recipes).values(
+                'name').annotate(
+                    total=Sum('recipeingredients__amount'))
 
-        serializer = self.get_serializer(qs, many=True)
+        qs_list = []
+        for ingredient in qs:
+            ingredient_object = get_object_or_404(
+                Ingredients, name=ingredient['name'])
+            ingredient_object.total = ingredient['total']
+            qs_list.append(ingredient_object)
+        serializer = self.get_serializer(qs_list, many=True)
         # get a string to write into txt file
         result = [
             f' - {i["name"]} ({i["measurement_unit"]}) - {i["amount"]}'
