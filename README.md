@@ -1,9 +1,12 @@
 # Foodgram
 
-![Workflow](https://github.com/kubanez-create/
-foodgram-project-react/actions/workflows/main.yml/badge.svg)
+![Workflow](https://github.com/kubanez-create/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
-[**Посетить проект**](http://84.252.142.4/recipes)
+[**Посетить проект**](http://84.252.142.4/recipes).
+
+**Администратор:** 
+login: zo22@mail.ru
+password: Wish_influence
 
 Приложение для фуд-блоггеров, на текущий момент позволяет зарегистрированным пользователям:
 
