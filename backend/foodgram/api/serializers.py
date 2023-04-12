@@ -49,7 +49,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Validate ingredients quantities."""
-        quantity = attrs.get('amount')
+        quantity = float(attrs.get('amount'))
         if any((quantity < AMOUNT_LOWER_BOUND, quantity > AMOUNT_UPPER_BOUND)):
             raise serializers.ValidationError(
                 ('Amount for an ingredient cannot be less then 0.00001 or '
