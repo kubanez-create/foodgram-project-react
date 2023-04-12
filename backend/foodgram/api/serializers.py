@@ -7,6 +7,9 @@ from rest_framework import serializers
 from recipes.models import Ingredients, RecipeIngredients, Recipes, Tags
 from users.models import CustomUser
 
+AMOUNT_LOWER_BOUND = 0.00001
+AMOUNT_UPPER_BOUND = 1000000
+TEXT_LENGTH_UPPER_BOUND = 20000
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,6 +46,16 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredients
         fields = '__all__'
+
+    def validate(self, attrs):
+        """Validate ingredients quantities."""
+        quantity = attrs.get('amount')
+        if any((quantity < AMOUNT_LOWER_BOUND, quantity > AMOUNT_UPPER_BOUND)):
+            raise serializers.ValidationError(
+                ('Amount for an ingredient cannot be less then 0.00001 or '
+                'greater then 1 million no matter how we measure it.')
+            )
+        return attrs
 
     # rewrote method to comply with technical specifications
     def to_representation(self, value):
@@ -125,6 +138,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
         )
+
+    def validate(self, attrs):
+        """Validate user's input."""
+        recipe = Recipes.objects.filter(name=attrs.get('name'),
+                                        author=self.context['request'].user)
+        if recipe:
+            raise serializers.ValidationError(
+                'Name of a recipe must be unique for any particular user.')
+        if len(attrs.get('text')) > TEXT_LENGTH_UPPER_BOUND:
+            raise serializers.ValidationError(
+                'Text for a recipe is too long. Consider writing a book.')
+        return attrs
 
     def get_is_favorited(self, obj):
         """
