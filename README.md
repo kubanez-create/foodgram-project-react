@@ -31,11 +31,21 @@
 
 1. Установите на сервере `docker` и `docker compose`;
 2. Создайте файл `/infra/.env`;
+Внесите в данный файл переменные окружения:
+```bash
+SECRET_KEY=<Ваш_секретный_ключ>
+DB_ENGINE=<база_данных>
+DB_NAME=<произвольное_имя_базы_данных>
+POSTGRES_USER=<имя_пользователя_базы_данных>
+POSTGRES_PASSWORD=<пароль_к_базе_данных>
+DB_HOST=<хост_базы_данных>
+DB_PORT=<порт_базы_данных>
+```
 3. Из директории `/infra/` выполните команду `docker compose up -d --build`;
-5. Выполните миграции `docker compose exec -it backend python manage.py migrate`;
-6. Создайте Администратора `docker compose exec -it backend python manage.py createsuperuser`;
-7. Соберите статику `docker compose exec backend python manage.py collectstatic --no-input`;
-8. Из директории `/backend/foodgram/` загрузите фикстуры в Базу 
+4. Выполните миграции `docker compose exec -it backend python manage.py migrate`;
+5. Создайте Администратора `docker compose exec -it backend python manage.py createsuperuser`;
+6. Соберите статику `docker compose exec backend python manage.py collectstatic --no-input`;
+7. Из директории `/backend/foodgram/` загрузите фикстуры в Базу 
 `sudo docker exec -it backend python manage.py loadcsv ingredients.csv.`
 
 ## Автор
